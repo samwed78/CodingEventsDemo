@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CodingEventsDemo.Data;
 using CodingEventsDemo.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,12 +13,11 @@ namespace coding_events_practice.Controllers
     public class EventsController : Controller
     {
 
-        static private List<Event> Events = new List<Event>();
 
         // GET: /<controller>/
         public IActionResult Index()
         {
-            ViewBag.events = Events;
+            ViewBag.events = EventData.GetAll();
 
             return View();
         }
@@ -29,10 +29,49 @@ namespace coding_events_practice.Controllers
 
         [HttpPost]
         [Route("Events/Add")]
-        public IActionResult NewEvent(string name, string desc)
+        public IActionResult NewEvent(Event newEvent)
         {
-            Events.Add(new Event(name, desc));
+            EventData.Add(newEvent);
             
+
+            return Redirect("/Events");
+        }
+        public IActionResult Delete()
+        {
+            ViewBag.events = EventData.GetAll();
+            return View();
+        }
+
+        [HttpPost]
+        public IActionResult Delete(int[] eventIds)
+        {
+            foreach(int eventId in eventIds)
+            {
+                EventData.Remove(eventId);
+            }
+            return Redirect("/Events");
+        }
+
+
+   
+
+
+        [HttpGet]
+        [Route("/Events/Edit/{eventId}")]
+        public IActionResult Edit (int eventId)
+        {
+            ViewBag.title = $"Edit Event {EventData.GetById(eventId).Name} (id ={EventData.GetById(eventId).Description}";
+            ViewBag.eventToEdit = EventData.GetById(eventId);
+
+            return View();
+         }
+        [HttpPost]
+        [Route("Events/Edit")]
+        public IActionResult SubmitEditEventForm(int eventId, string name, string description)
+        {
+            EventData.GetById(eventId).Name = name;
+            EventData.GetById(eventId).Description = description;
+
 
             return Redirect("/Events");
         }
